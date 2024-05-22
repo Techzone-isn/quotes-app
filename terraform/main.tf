@@ -1,4 +1,10 @@
 # Create a custom VPC with the name "myVPC"
+provider "aws" {
+  region     = var.region
+  access_key = var.access_key
+  secret_key = var.secret_key
+}
+#
 resource "tls_private_key" "app_ssh_key" {
  algorithm = "RSA"
  rsa_bits = 4096
@@ -24,8 +30,8 @@ resource "aws_internet_gateway" "custom_igw" {
 # Create a public subnet within the VPC
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.custom_vpc.id
-  cidr_block              = "10.0.1.0/24"  # Change this to your desired CIDR block for the public subnet
-  map_public_ip_on_launch = true           # Associate public IP addresses with instances in this subnet
+  cidr_block              = "10.0.1.0/24"  # Change this to your desired CIDR bl                               ock for the public subnet
+  map_public_ip_on_launch = true           # Associate public IP addresses with                                instances in this subnet
 }
 
 
@@ -45,7 +51,7 @@ resource "aws_route_table_association" "public_route_association" {
   route_table_id = aws_route_table.public_route_table.id
 }
 
-# Create a security group to allow SSH access (you can customize the ingress rules as needed)
+# Create a security group to allow SSH access (you can customize the ingress rul                               es as needed)
 resource "aws_security_group" "custom_sg" {
   name        = "custom-security-group"
   description = "Allow SSH and other necessary ports"
@@ -92,13 +98,13 @@ resource "aws_instance" "custom_ec2_instance" {
   key_name = aws_key_pair.app_ssh_key.key_name
 
 
-  # Add additional configuration for the EC2 instance if required (e.g., user_data, tags, etc.)
+  # Add additional configuration for the EC2 instance if required (e.g., user_da                               ta, tags, etc.)
   user_data = <<-EOF
               #!/bin/bash
               sudo apt update -y
-              sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
-              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-              echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt install apt-transport-https ca-certificates curl software                               -properties-common -y
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg                                --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/                               keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(                               lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/n                               ull
               sudo apt update -y
               sudo apt install docker-ce -y
 
@@ -108,12 +114,15 @@ resource "aws_instance" "custom_ec2_instance" {
               sudo systemctl enable docker
               sudo usermod -aG docker ubuntu && newgrp docker
               # Install Minikube
-              curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
+              curl -Lo minikube https://storage.googleapis.com/minikube/releases                               /latest/minikube-linux-amd64 \
               && chmod +x minikube
               sudo mv minikube /usr/local/bin/
               sudo yum install git -y
+              #sudo apt  install docker.io
+              #sudo usermod -aG docker $USER
+              #newgrp docker
               git clone https://github.com/Techzone-isn/quotes-app.git
-              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io                               /release/stable.txt)/bin/linux/amd64/kubectl"
               chmod +x kubectl
               sudo mv ./kubectl /usr/local/bin/
               EOF
